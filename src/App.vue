@@ -1,38 +1,23 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import type { FeedEntry } from './types'
-import { fetchFeed } from './api/feed'
 import { useFeed } from './composables/useFeed'
 import FilterBar from './components/FilterBar.vue'
-import FeedEntry from './components/FeedEntry.vue'
+import FeedEntryComponent from './components/FeedEntry.vue'
 import Pagination from './components/Pagination.vue'
-
-const entries = ref<FeedEntry[]>([])
-const loading = ref(true)
-const error = ref<string | null>(null)
-
-onMounted(async () => {
-  try {
-    entries.value = await fetchFeed()
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load feed'
-  } finally {
-    loading.value = false
-  }
-})
 
 const {
   filters,
   sortBy,
   currentPage,
+  entries,
+  loading,
+  error,
+  total,
+  totalPages,
   genres,
   artists,
   users,
-  filtered,
-  paginated,
-  totalPages,
   clearFilters,
-} = useFeed(entries)
+} = useFeed()
 </script>
 
 <template>
@@ -64,17 +49,17 @@ const {
           :genres="genres"
           :artists="artists"
           :users="users"
-          :resultCount="filtered.length"
+          :resultCount="total"
           @clear="clearFilters"
         />
 
-        <div v-if="paginated.length === 0" class="state-message">
+        <div v-if="entries.length === 0" class="state-message">
           No tracks match the current filters.
         </div>
 
         <div v-else class="feed-grid">
-          <FeedEntry
-            v-for="entry in paginated"
+          <FeedEntryComponent
+            v-for="entry in entries"
             :key="entry.id"
             :entry="entry"
           />

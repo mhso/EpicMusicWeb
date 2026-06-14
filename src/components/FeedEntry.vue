@@ -60,8 +60,8 @@ function genreColor(genre: string): string {
       <div v-else class="embed-placeholder">
         <span class="placeholder-icon">♪</span>
         <span>No YouTube link</span>
-        <a :href="entry.sourceUrl" target="_blank" rel="noopener noreferrer" class="source-link">
-          Open on {{ entry.sourceType }}
+        <a :href="entry.originalUrl" target="_blank" rel="noopener noreferrer" class="source-link">
+          Open on {{ entry.siteName }}
         </a>
       </div>
     </div>
@@ -69,14 +69,14 @@ function genreColor(genre: string): string {
     <div class="entry-meta">
       <div class="meta-top">
         <h2 class="song-title">{{ entry.title }}</h2>
-        <span
+        <span v-for="genre in entry.genres"
           class="genre-badge"
-          :style="{ '--genre-color': genreColor(entry.genre) }"
-        >{{ entry.genre }}</span>
+          :style="{ '--genre-color': genreColor(genre) }"
+        >{{ genre }}</span>
       </div>
 
       <p class="artist-album">
-        <span class="artist">{{ entry.artist }}</span>
+        <span class="artist"><span v-for="artist in entry.artists">{{ artist }}</span></span>
         <span class="separator">·</span>
         <span class="album">{{ entry.album }}</span>
       </p>
@@ -85,7 +85,7 @@ function genreColor(genre: string): string {
         <div class="poster-info">
           <span class="avatar">{{ entry.postedBy[0].toUpperCase() }}</span>
           <span class="username">{{ entry.postedBy }}</span>
-          <span class="date">{{ formatDate(entry.datePosted) }}</span>
+          <span class="date">{{ formatDate(entry.postedAt) }}</span>
         </div>
 
         <div class="reactions" :title="`${totalReactions(entry)} total reactions`">

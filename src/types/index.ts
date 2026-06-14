@@ -6,21 +6,45 @@ export interface Reaction {
 export interface FeedEntry {
   id: number
   title: string
-  artist: string
   album: string
-  genre: string
-  datePosted: string       // ISO 8601
-  postedBy: string         // Discord username
-  youtubeId: string | null // null if only Spotify/Tidal link was posted
   siteName: 'youtube' | 'spotify' | 'tidal'
-  sourceUrl: string
+  originalUrl: string
+  youtubeId: string
+  youtubeTitle: string
+  messageId: number
+  postedBy: string // Discord username
+  postedAt: string // ISO 8601
+  artists: string[]
+  genres: string[]
   reactions: Reaction[]
 }
 
 export type SortOption = 'date-desc' | 'date-asc' | 'reactions'
 
+export interface FeedPage {
+  entries: FeedEntry[]
+  total: number
+}
+
 export interface Filters {
-  genre: string
+  siteName: string
   artist: string
+  genre: string
   postedBy: string
+}
+
+export interface ListFeedRequest {
+  filters: Filters
+  sortBy: "date_posted" | "reactions"
+  sortOrder: "asc" | "desc"
+  page: number
+}
+
+export interface TaskStartResponse {
+  status: "success" | "already_running" | "error"
+  taskId: string
+}
+
+export interface TaskStatusResponse {
+  status: "success" | "running" | "missing" | "error"
 }

@@ -1,82 +1,57 @@
 import { ref, computed, watch } from 'vue'
-import type { Ref } from 'vue'
 import type { FeedEntry, Filters, SortOption } from '../types'
+import { fetchFeed } from '../api/feed'
 
 const PAGE_SIZE = 30
 
-function totalReactions(entry: FeedEntry): number {
-  return entry.reactions.reduce((sum, r) => sum + r.count, 0)
+function toApiSort(sort: SortOption) {
+  if (sort === 'reactions') return { sortBy: 'reactions' as const, sortOrder: 'desc' as const }
+  return { sortBy: 'date_posted' as const, sortOrder: sort === 'date-asc' ? 'asc' as const : 'desc' as const }
 }
 
-export function useFeed(entries: Ref<FeedEntry[]>) {
-  const filters = ref<Filters>({ genre: '', artist: '', postedBy: '' })
-  const sortBy = ref<SortOption>('date-desc')
-  const currentPage = ref(1)
+export function useFeed() {
+  const filters = ref<Filters>({ siteName: '', artist: '', genre: '', postedBy: '' });
+  const sortBy = ref<SortOption>('date-desc');
+  const currentPage = ref(1);
+  const entries = ref<FeedEntry[]>([]);
+  const total = ref(0);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-  const genres = computed(() =>
-    [...new Set(entries.value.map((e) => e.genre))].sort(),
-  )
-  const artists = computed(() =>
-    [...new Set(entries.value.map((e) => e.artist))].sort(),
-  )
-  const users = computed(() =>
-    [...new Set(entries.value.map((e) => e.postedBy))].sort(),
-  )
+  const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)));
+  const genres = computed(() => [...new Set(entries.value.flatMap(e => e.genres))].sort());
+  const artists = computed(() => [...new Set(entries.value.flatMap(e => e.artists))].sort());
+  const users = computed(() => [...new Set(entries.value.map(e => e.postedBy))].sort());
 
-  const filtered = computed(() => {
-    let result = entries.value
+  async function load() {
+    loading.value = true
+    error.value = null
+    try {
+      const page = await fetchFeed({
+        filters: filters.value,
+        ...toApiSort(sortBy.value),
+        page: currentPage.value,
+      });
 
-    if (filters.value.genre)
-      result = result.filter((e) => e.genre === filters.value.genre)
-    if (filters.value.artist)
-      result = result.filter((e) => e.artist === filters.value.artist)
-    if (filters.value.postedBy)
-      result = result.filter((e) => e.postedBy === filters.value.postedBy)
+      let data = page.data;
 
-    const sorted = [...result]
-    if (sortBy.value === 'date-desc')
-      sorted.sort(
-        (a, b) =>
-          new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime(),
-      )
-    else if (sortBy.value === 'date-asc')
-      sorted.sort(
-        (a, b) =>
-          new Date(a.datePosted).getTime() - new Date(b.datePosted).getTime(),
-      )
-    else if (sortBy.value === 'reactions')
-      sorted.sort((a, b) => totalReactions(b) - totalReactions(a))
+      entries.value = data.entries;
+      total.value = data.total;
+    } catch (e) {
+      console.log("Error", e);
+      error.value = e instanceof Error ? e.message : 'Failed to load feed'
+    } finally {
+      loading.value = false
+    }
+  }
 
-    return sorted
-  })
-
-  const totalPages = computed(() =>
-    Math.max(1, Math.ceil(filtered.value.length / PAGE_SIZE)),
-  )
-
-  const paginated = computed(() => {
-    const start = (currentPage.value - 1) * PAGE_SIZE
-    return filtered.value.slice(start, start + PAGE_SIZE)
-  })
-
-  // Reset to page 1 whenever filters or sort order change
-  watch([filters, sortBy], () => { currentPage.value = 1 }, { deep: true })
+  watch([filters, sortBy], () => { currentPage.value = 1 }, { deep: true });
+  watch([filters, sortBy, currentPage], load, { deep: true, immediate: true });
 
   function clearFilters() {
-    filters.value = { genre: '', artist: '', postedBy: '' }
+    filters.value = { siteName: '', artist: '', genre: '', postedBy: '' }
     sortBy.value = 'date-desc'
   }
 
-  return {
-    filters,
-    sortBy,
-    currentPage,
-    genres,
-    artists,
-    users,
-    filtered,
-    paginated,
-    totalPages,
-    clearFilters,
-  }
+  return { filters, sortBy, currentPage, entries, loading, error, total, totalPages, genres, artists, users, clearFilters }
 }
