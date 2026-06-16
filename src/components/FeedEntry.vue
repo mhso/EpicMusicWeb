@@ -83,9 +83,12 @@ function genreColor(genre: string): string {
 
       <div class="entry-footer">
         <div class="poster-info">
-          <span class="avatar">{{ entry.postedBy[0].toUpperCase() }}</span>
+          <div v-if="entry.avatar" class="avatar-discord">
+            <img  src="{{ entry.avatar }}">
+          </div>
+          <span v-else class="avatar-placeholder">{{ entry.postedBy[0].toUpperCase() }}</span>
           <span class="username">{{ entry.postedBy }}</span>
-          <span class="date">{{ formatDate(entry.postedAt) }}</span>
+          <span class="date">{{ formatDate(entry.datePosted) }}</span>
         </div>
 
         <div class="reactions" :title="`${totalReactions(entry)} total reactions`">
@@ -236,7 +239,11 @@ function genreColor(genre: string): string {
   min-width: 0;
 }
 
-.avatar {
+.avatar-discord {
+  
+}
+
+.avatar-placeholder {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;

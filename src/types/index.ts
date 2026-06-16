@@ -12,8 +12,9 @@ export interface FeedEntry {
   youtubeId: string
   youtubeTitle: string
   messageId: number
+  datePosted: string // ISO 8601
   postedBy: string // Discord username
-  postedAt: string // ISO 8601
+  avatar: string
   artists: string[]
   genres: string[]
   reactions: Reaction[]
@@ -27,10 +28,10 @@ export interface FeedPage {
 }
 
 export interface Filters {
-  siteName: string
-  artist: string
-  genre: string
-  postedBy: string
+  siteName?: string
+  artist?: string
+  genre?: string
+  postedBy?: string
 }
 
 export interface ListFeedRequest {

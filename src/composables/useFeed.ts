@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import type { FeedEntry, Filters, SortOption } from '../types'
 import { fetchFeed } from '../api/feed'
+import { AxiosError } from "axios"
 
 const PAGE_SIZE = 30
 
@@ -10,7 +11,7 @@ function toApiSort(sort: SortOption) {
 }
 
 export function useFeed() {
-  const filters = ref<Filters>({ siteName: '', artist: '', genre: '', postedBy: '' });
+  const filters = ref<Filters>({});
   const sortBy = ref<SortOption>('date-desc');
   const currentPage = ref(1);
   const entries = ref<FeedEntry[]>([]);
@@ -30,16 +31,23 @@ export function useFeed() {
       const page = await fetchFeed({
         filters: filters.value,
         ...toApiSort(sortBy.value),
-        page: currentPage.value,
+        page: currentPage.value - 1,
       });
 
       let data = page.data;
+
+      console.log(data);
 
       entries.value = data.entries;
       total.value = data.total;
     } catch (e) {
       console.log("Error", e);
       error.value = e instanceof Error ? e.message : 'Failed to load feed'
+      if (e instanceof AxiosError) {
+        if (e.response) {
+          console.log(e.response.data);
+        }
+      }
     } finally {
       loading.value = false
     }
@@ -49,8 +57,8 @@ export function useFeed() {
   watch([filters, sortBy, currentPage], load, { deep: true, immediate: true });
 
   function clearFilters() {
-    filters.value = { siteName: '', artist: '', genre: '', postedBy: '' }
-    sortBy.value = 'date-desc'
+    filters.value = {};
+    sortBy.value = "date-desc";
   }
 
   return { filters, sortBy, currentPage, entries, loading, error, total, totalPages, genres, artists, users, clearFilters }
