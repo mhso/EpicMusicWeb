@@ -28,13 +28,11 @@ export function useFeed() {
     loading.value = true
     error.value = null
     try {
-      const page = await fetchFeed({
-        filters: filters.value,
+      const data = await fetchFeed({
+        ...filters.value,
         ...toApiSort(sortBy.value),
         page: currentPage.value - 1,
       });
-
-      let data = page.data;
 
       console.log(data);
 
@@ -61,5 +59,5 @@ export function useFeed() {
     sortBy.value = "date-desc";
   }
 
-  return { filters, sortBy, currentPage, entries, loading, error, total, totalPages, genres, artists, users, clearFilters }
+  return { filters, sortBy, currentPage, entries, loading, error, total, totalPages, genres, artists, users, clearFilters, reload: load }
 }

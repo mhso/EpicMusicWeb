@@ -1,5 +1,11 @@
 <script setup lang="ts">
+import { reactive } from 'vue'
 import type { FeedEntry } from '../types'
+
+// Module-level: persists across filter changes for the page session.
+// Once a video is activated, it stays activated even if the card is filtered
+// away and back — avoiding a re-render back to the thumbnail state.
+const activated = reactive(new Set<number>())
 
 const props = defineProps<{ entry: FeedEntry }>()
 
@@ -48,15 +54,29 @@ function genreColor(genre: string): string {
 <template>
   <article class="entry-card">
     <div class="embed-wrapper">
-      <iframe
-        v-if="entry.youtubeId"
-        :src="`https://www.youtube-nocookie.com/embed/${entry.youtubeId}`"
-        title="YouTube video player"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-        loading="lazy"
-      />
+      <template v-if="entry.youtubeId">
+        <iframe
+          v-if="activated.has(entry.id)"
+          :src="`https://www.youtube-nocookie.com/embed/${entry.youtubeId}?autoplay=1`"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        />
+        <button v-else class="thumbnail-facade" @click="activated.add(entry.id)">
+          <img
+            :src="`https://img.youtube.com/vi/${entry.youtubeId}/hqdefault.jpg`"
+            :alt="entry.youtubeTitle || entry.title"
+            loading="lazy"
+          />
+          <span class="play-btn" aria-label="Play video">
+            <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C0 13.05 0 24 0 24s0 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C68 34.95 68 24 68 24S68 13.05 66.52 7.74z" fill="#ff0000"/>
+              <path d="M45 24 27 14v20" fill="#fff"/>
+            </svg>
+          </span>
+        </button>
+      </template>
       <div v-else class="embed-placeholder">
         <span class="placeholder-icon">♪</span>
         <span>No YouTube link</span>
@@ -68,11 +88,13 @@ function genreColor(genre: string): string {
 
     <div class="entry-meta">
       <div class="meta-top">
-        <h2 class="song-title">{{ entry.title }}</h2>
-        <span v-for="genre in entry.genres"
-          class="genre-badge"
-          :style="{ '--genre-color': genreColor(genre) }"
-        >{{ genre }}</span>
+        <h2 class="song-title">{{ entry.title || entry.youtubeTitle }}</h2>
+        <div class="genres-wrapper">
+          <span v-for="genre in entry.genres"
+            class="genre-badge"
+            :style="{ '--genre-color': genreColor(genre) }"
+          >{{ genre }}</span>
+        </div>
       </div>
 
       <p class="artist-album">
@@ -83,10 +105,10 @@ function genreColor(genre: string): string {
 
       <div class="entry-footer">
         <div class="poster-info">
-          <div v-if="entry.avatar" class="avatar-discord">
-            <img  src="{{ entry.avatar }}">
+          <div v-if="entry.avatar">
+            <img class="avatar avatar-discord" :src=entry.avatar>
           </div>
-          <span v-else class="avatar-placeholder">{{ entry.postedBy[0].toUpperCase() }}</span>
+          <span v-else class="avatar avatar-placeholder">{{ entry.postedBy[0].toUpperCase() }}</span>
           <span class="username">{{ entry.postedBy }}</span>
           <span class="date">{{ formatDate(entry.datePosted) }}</span>
         </div>
@@ -134,6 +156,50 @@ function genreColor(genre: string): string {
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.thumbnail-facade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: #000;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.thumbnail-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.2s;
+}
+
+.thumbnail-facade:hover img {
+  opacity: 0.75;
+}
+
+.play-btn {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.play-btn svg {
+  width: 64px;
+  height: 45px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  transition: transform 0.15s;
+}
+
+.thumbnail-facade:hover .play-btn svg {
+  transform: scale(1.1);
 }
 
 .embed-placeholder {
@@ -185,8 +251,16 @@ function genreColor(genre: string): string {
   line-height: 1.3;
 }
 
-.genre-badge {
+.genres-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  justify-content: right;
   flex-shrink: 0;
+}
+
+.genre-badge {
+  margin: 3px 0;
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -239,22 +313,27 @@ function genreColor(genre: string): string {
   min-width: 0;
 }
 
-.avatar-discord {
-  
-}
-
-.avatar-placeholder {
+.avatar {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.avatar-discord {
+  width: 100%;
+  border-radius: 50%;
+}
+
+.avatar-placeholder {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  
 }
 
 .username {

@@ -14,7 +14,7 @@ export interface FeedEntry {
   messageId: number
   datePosted: string // ISO 8601
   postedBy: string // Discord username
-  avatar: string
+  avatar: string | null
   artists: string[]
   genres: string[]
   reactions: Reaction[]
@@ -28,14 +28,17 @@ export interface FeedPage {
 }
 
 export interface Filters {
-  siteName?: string
-  artist?: string
-  genre?: string
-  postedBy?: string
+  siteNames?: string[]
+  artists?: string[]
+  genres?: string[]
+  posters?: string[]
 }
 
 export interface ListFeedRequest {
-  filters: Filters
+  siteNames?: string[]
+  artists?: string[]
+  genres?: string[]
+  posters?: string[]
   sortBy: "date_posted" | "reactions"
   sortOrder: "asc" | "desc"
   page: number

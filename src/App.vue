@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useFeed } from './composables/useFeed'
+import { syncAndWait } from './api/feed'
 import FilterBar from './components/FilterBar.vue'
 import FeedEntryComponent from './components/FeedEntry.vue'
 import Pagination from './components/Pagination.vue'
@@ -17,7 +19,29 @@ const {
   artists,
   users,
   clearFilters,
-} = useFeed()
+  reload,
+} = useFeed();
+
+const syncing = ref(false);
+const syncError = ref<string | null>(null);
+const syncDone = ref(false);
+
+async function handleSync() {
+  syncing.value = true;
+  syncError.value = null;
+  syncDone.value = false;
+
+  try {
+    await syncAndWait();
+    await reload();
+    syncDone.value = true;
+    setTimeout(() => { syncDone.value = false }, 1500);
+  } catch (e) {
+    syncError.value = e instanceof Error ? e.message : 'Sync failed';
+  } finally {
+    syncing.value = false;
+  }
+}
 </script>
 
 <template>
@@ -26,9 +50,17 @@ const {
       <div class="header-inner">
         <div class="logo">
           <span class="logo-icon">♬</span>
-          <span class="logo-text">Epic Music Feed</span>
+          <span class="logo-text">#epic-music Bangers</span>
         </div>
-        <p class="header-sub">Music shared by the Discord community</p>
+        <p class="header-sub">Tunes fra Arbejdspladsen</p>
+        <div class="header-actions">
+          <p v-if="syncError" class="sync-error">{{ syncError }}</p>
+          <button class="sync-btn" :disabled="syncing" @click="handleSync">
+            <span v-if="syncing" class="spinner" aria-hidden="true" />
+            <span v-else-if="syncDone">✓ Synced</span>
+            <span v-else>Sync</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -118,6 +150,44 @@ const {
 .header-sub {
   font-size: 0.85rem;
   color: var(--text-muted);
+  margin: 0;
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sync-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.9rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.sync-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.sync-btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.sync-error {
+  font-size: 0.8rem;
+  color: #f87171;
   margin: 0;
 }
 
