@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
-import type { FeedEntry } from '../types'
+import { reactive } from 'vue';
+import type { FeedEntry } from '../types';
 
 // Module-level: persists across filter changes for the page session.
 // Once a video is activated, it stays activated even if the card is filtered
 // away and back — avoiding a re-render back to the thumbnail state.
-const activated = reactive(new Set<number>())
+const activated = reactive(new Set<number>());
 
-const props = defineProps<{ entry: FeedEntry }>()
+const props = defineProps<{ entry: FeedEntry }>();
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
+  return new Date(iso).toLocaleDateString('en-DK', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -18,7 +18,7 @@ function formatDate(iso: string): string {
 }
 
 function totalReactions(entry: FeedEntry): number {
-  return entry.reactions.reduce((sum, r) => sum + r.count, 0)
+  return entry.reactions.reduce((sum, r) => sum + r.count, 0);
 }
 
 const genreColorMap: Record<string, string> = {
@@ -47,12 +47,26 @@ const genreColorMap: Record<string, string> = {
 }
 
 function genreColor(genre: string): string {
-  return genreColorMap[genre] ?? '#94a3b8'
+  return genreColorMap[genre] ?? '#94a3b8';
+}
+
+function messagePreview(message: string | null): string {
+  const maxLength = 75;
+
+  if (!message) {
+    return "No message";
+  }
+
+  return message.length < maxLength ? message : message.slice(0, maxLength - 3) + "...";
 }
 </script>
 
 <template>
   <article class="entry-card">
+    <div class="entry-message">
+      {{ messagePreview(entry.message) }}
+    </div>
+
     <div class="embed-wrapper">
       <template v-if="entry.youtubeId">
         <iframe
@@ -226,6 +240,11 @@ function genreColor(genre: string): string {
 
 .source-link:hover {
   text-decoration: underline;
+}
+
+.entry-message {
+  font-style: italic;
+  padding: 0.9rem 1rem 0.8rem;
 }
 
 .entry-meta {

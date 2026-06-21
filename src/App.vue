@@ -50,9 +50,9 @@ async function handleSync() {
       <div class="header-inner">
         <div class="logo">
           <span class="logo-icon">♬</span>
-          <span class="logo-text">#epic-music Bangers</span>
+          <span class="logo-text">#epic-music feed</span>
         </div>
-        <p class="header-sub">Tunes fra Arbejdspladsen</p>
+        <p class="header-sub">Bangers fra Arbejdspladsen</p>
         <div class="header-actions">
           <p v-if="syncError" class="sync-error">{{ syncError }}</p>
           <button class="sync-btn" :disabled="syncing" @click="handleSync">

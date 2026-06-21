@@ -3,7 +3,7 @@ import type { FeedEntry, Filters, SortOption } from '../types'
 import { fetchFeed } from '../api/feed'
 import { AxiosError } from "axios"
 
-const PAGE_SIZE = 30
+const PAGE_SIZE = 60
 
 function toApiSort(sort: SortOption) {
   if (sort === 'reactions') return { sortBy: 'reactions' as const, sortOrder: 'desc' as const }

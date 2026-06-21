@@ -11,6 +11,7 @@ export interface FeedEntry {
   originalUrl: string
   youtubeId: string
   youtubeTitle: string
+  message: string | null
   messageId: number
   datePosted: string // ISO 8601
   postedBy: string // Discord username
