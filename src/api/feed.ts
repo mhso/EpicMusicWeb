@@ -8,9 +8,37 @@ const POLL_TIMEOUT_MS = 5 * 60 * 1_000;
 
 export const BASE_URL = "http://localhost:5007";
 
+function toPascal(s: string) {
+  let out = "";
+  let upper = false;
+  for (let c of s) {
+    if (c == "_") {
+      upper = true;
+    }
+    else if (upper) {
+      out += `${c.toUpperCase()}`;
+      upper = false;
+    }
+    else {
+      out += c;
+    }
+  }
+
+  return out;
+}
+
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 5000,
+  transformResponse: [(data) => {
+    let parsedData = JSON.parse(data);
+    let output: Record<string, unknown> = {};
+    for (let [k, v] of Object.entries(parsedData)) {
+      output[toPascal(k)] = v;
+    }
+
+    return output;
+  }]
 });
 
 function toSnake(s: string) {
@@ -36,7 +64,7 @@ function stringify(obj: Record<string, any>) {
   return qs.stringify(snakeCased, {"encodeValuesOnly": true, "indices": false});
 }
 
-const feedCache = new Map<string, FeedPage>()
+const feedCache = new Map<string, FeedPage>();
 
 function makeCacheKey(request: ListFeedRequest): string {
   const normalized: Record<string, unknown> = {};
@@ -56,7 +84,12 @@ export async function fetchFeed(request: ListFeedRequest): Promise<FeedPage> {
     return feedCache.get(key)!;
   }
 
-  const page = (await api.get<FeedPage>("list", {"params": request, "paramsSerializer": stringify})).data;
+  let response = await api.get<FeedPage>(
+    "list",
+    {"params": request, "paramsSerializer": stringify}
+  );
+
+  const page = response.data;
 
   for (const entry of page.entries) {
     if (entry.avatar) {

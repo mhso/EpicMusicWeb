@@ -25,6 +25,9 @@ export type SortOption = 'date-desc' | 'date-asc' | 'reactions'
 
 export interface FeedPage {
   entries: FeedEntry[]
+  uniqueArtists: string[]
+  uniqueGenres: string[]
+  uniquePosters: string[]
   total: number
 }
 

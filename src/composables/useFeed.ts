@@ -1,9 +1,9 @@
-import { ref, computed, watch } from 'vue'
-import type { FeedEntry, Filters, SortOption } from '../types'
-import { fetchFeed } from '../api/feed'
-import { AxiosError } from "axios"
+import { ref, computed, watch } from 'vue';
+import type { FeedEntry, Filters, SortOption } from '../types';
+import { fetchFeed } from '../api/feed';
+import { AxiosError } from "axios";
 
-const PAGE_SIZE = 60
+const PAGE_SIZE = 60;
 
 function toApiSort(sort: SortOption) {
   if (sort === 'reactions') return { sortBy: 'reactions' as const, sortOrder: 'desc' as const }
@@ -20,13 +20,13 @@ export function useFeed() {
   const error = ref<string | null>(null);
 
   const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)));
-  const genres = computed(() => [...new Set(entries.value.flatMap(e => e.genres))].sort());
-  const artists = computed(() => [...new Set(entries.value.flatMap(e => e.artists))].sort());
-  const users = computed(() => [...new Set(entries.value.map(e => e.postedBy))].sort());
+  const genres = ref<string[]>([]);
+  const artists = ref<string[]>([]);
+  const users = ref<string[]>([]);
 
   async function load() {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
     try {
       const data = await fetchFeed({
         ...filters.value,
@@ -37,6 +37,9 @@ export function useFeed() {
       console.log(data);
 
       entries.value = data.entries;
+      genres.value = data.uniqueGenres;
+      artists.value = data.uniqueArtists;
+      users.value = data.uniquePosters;
       total.value = data.total;
     } catch (e) {
       console.log("Error", e);
@@ -59,5 +62,19 @@ export function useFeed() {
     sortBy.value = "date-desc";
   }
 
-  return { filters, sortBy, currentPage, entries, loading, error, total, totalPages, genres, artists, users, clearFilters, reload: load }
+  return {
+    filters,
+    sortBy,
+    currentPage,
+    entries,
+    loading,
+    error,
+    total,
+    totalPages,
+    genres,
+    artists,
+    users,
+    clearFilters,
+    reload: load
+  };
 }

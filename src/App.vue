@@ -164,7 +164,7 @@ async function handleSync() {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: transparent;
+  background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text-muted);
