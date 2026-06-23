@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useFeed } from './composables/useFeed'
-import { syncAndWait } from './api/feed'
+import { syncAndWait } from './api/api'
 import FilterBar from './components/FilterBar.vue'
 import FeedEntryComponent from './components/FeedEntry.vue'
 import Pagination from './components/Pagination.vue'
@@ -53,7 +53,7 @@ async function handleSync() {
           <span class="logo-text">#epic-music feed</span>
         </div>
         <p class="header-sub">Bangers fra Arbejdspladsen</p>
-        <div class="header-actions">
+        <div v-if="!loading && !error" class="header-actions">
           <p v-if="syncError" class="sync-error">{{ syncError }}</p>
           <button class="sync-btn" :disabled="syncing" @click="handleSync">
             <span v-if="syncing" class="spinner" aria-hidden="true" />

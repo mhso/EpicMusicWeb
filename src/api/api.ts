@@ -27,9 +27,40 @@ function toPascal(s: string) {
   return out;
 }
 
+async function getToken() {
+  let cookie = await cookieStore.get("epic_music_token");
+  if (cookie != null) {
+    return cookie.value;
+  }
+
+  let query = window.location.search;
+  if (!query) {
+    return null;
+  }
+
+  query = query.replace("?", "");
+
+  try {
+    for (let q of query.split("&")) {
+      let [k, v] = q.split("=");
+      if (k.trim() === "token") {
+        return v;
+      }
+    }
+  }
+
+  catch {
+    return null;
+  }
+
+  return null;
+}
+
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
-  timeout: 5000,
+  timeout: 8000,
+  withCredentials: true,
+  headers: {"Authentication": `Bearer ${await getToken()}`},
   transformResponse: [(data) => {
     let parsedData = JSON.parse(data);
     let output: Record<string, unknown> = {};
@@ -120,4 +151,8 @@ export async function syncAndWait(): Promise<TaskStatusResponse> {
   }
 
   throw new Error("Sync timed out after 5 minutes");
+}
+
+export async function isAuthorized(token: string): Promise<boolean> {
+  return (await api.get<boolean>("auhorized", {"params": {"token": token}})).data;
 }

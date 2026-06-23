@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue';
 import type { FeedEntry, Filters, SortOption } from '../types';
-import { fetchFeed } from '../api/feed';
+import { fetchFeed } from '../api/api';
 import { AxiosError } from "axios";
 
 const PAGE_SIZE = 60;
@@ -34,8 +34,6 @@ export function useFeed() {
         page: currentPage.value - 1,
       });
 
-      console.log(data);
-
       entries.value = data.entries;
       genres.value = data.uniqueGenres;
       artists.value = data.uniqueArtists;
@@ -43,10 +41,10 @@ export function useFeed() {
       total.value = data.total;
     } catch (e) {
       console.log("Error", e);
-      error.value = e instanceof Error ? e.message : 'Failed to load feed'
+      error.value = e instanceof Error ? e.message : "Failed to load feed";
       if (e instanceof AxiosError) {
         if (e.response) {
-          console.log(e.response.data);
+          error.value += ` - ${e.response.data.detail}`;
         }
       }
     } finally {
@@ -75,6 +73,6 @@ export function useFeed() {
     artists,
     users,
     clearFilters,
-    reload: load
+    reload: load,
   };
 }
