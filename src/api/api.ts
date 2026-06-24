@@ -44,6 +44,7 @@ async function getToken() {
     for (let q of query.split("&")) {
       let [k, v] = q.split("=");
       if (k.trim() === "token") {
+        window.history.pushState("authenticated", "", "/")
         return v;
       }
     }
