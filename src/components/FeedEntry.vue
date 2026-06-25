@@ -46,25 +46,23 @@ const genreColorMap: Record<string, string> = {
   'Jazz':             '#fbbf24',
 }
 
-function genreColor(genre: string): string {
-  return genreColorMap[genre] ?? '#94a3b8';
-}
-
-function messagePreview(message: string | null): string {
-  const maxLength = 75;
-
+function formatMessage(message: string | null): string {
   if (!message) {
-    return "No message";
+    return "";
   }
 
-  return message.length < maxLength ? message : message.slice(0, maxLength - 3) + "...";
+  return `"${message}"`;
+}
+
+function genreColor(genre: string): string {
+  return genreColorMap[genre] ?? '#94a3b8';
 }
 </script>
 
 <template>
   <article class="entry-card">
-    <div class="entry-message">
-      {{ messagePreview(entry.message) }}
+    <div class="entry-message" :title="entry.message || undefined">
+      {{ formatMessage(entry.message) }}
     </div>
 
     <div class="embed-wrapper">
@@ -133,7 +131,7 @@ function messagePreview(message: string | null): string {
             :key="reaction.emoji"
             class="reaction"
           >
-            {{ reaction.emoji }}&thinsp;{{ reaction.count }}
+            <img v-if="reaction.emoji.startsWith('https://')" class="emoji-icon" :src="reaction.emoji"><span v-else>{{ reaction.emoji }}</span>&thinsp;{{ reaction.count }}
           </span>
         </div>
       </div>
@@ -244,7 +242,13 @@ function messagePreview(message: string | null): string {
 
 .entry-message {
   font-style: italic;
-  padding: 0.9rem 1rem 0.8rem;
+  padding: 0.4rem 1rem 0.8rem;
+  font-size: 14px;
+  height: 50px;
+  line-height: 2.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .entry-meta {
@@ -384,5 +388,10 @@ function messagePreview(message: string | null): string {
   padding: 0.1rem 0.45rem;
   white-space: nowrap;
   cursor: default;
+}
+
+.emoji-icon {
+  width: 12px;
+  vertical-align: center;
 }
 </style>

@@ -5,38 +5,44 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'update:currentPage': [page: number]
+  'update:currentPage': [page: number];
 }>()
 
 function pages(): (number | '…')[] {
-  const { currentPage: cur, totalPages: total } = props
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const { currentPage: cur, totalPages: total } = props;
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
 
-  const result: (number | '…')[] = [1]
+  const result: (number | '…')[] = [1];
 
-  if (cur > 3) result.push('…')
+  if (cur > 3) {
+    result.push('…');
+  }
 
-  const rangeStart = Math.max(2, cur - 1)
-  const rangeEnd = Math.min(total - 1, cur + 1)
-  for (let i = rangeStart; i <= rangeEnd; i++) result.push(i)
+  const rangeStart = Math.max(2, cur - 1);
+  const rangeEnd = Math.min(total - 1, cur + 1);
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    result.push(i);
+  }
 
-  if (cur < total - 2) result.push('…')
+  if (cur < total - 2) result.push('…');
 
-  result.push(total)
-  return result
+  result.push(total);
+  return result;
 }
 
 function go(page: number | '…') {
-  if (typeof page === 'number') emit('update:currentPage', page)
+  if (typeof page === 'number') emit('update:currentPage', page);
 }
 
 function scrollTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function navigate(page: number | '…') {
-  go(page)
-  scrollTop()
+  go(page);
+  scrollTop();
 }
 </script>
 
