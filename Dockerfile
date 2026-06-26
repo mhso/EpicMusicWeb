@@ -8,14 +8,14 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy code and runtime files 
-COPY index.html tsconfig.json vite.config.ts ./
-COPY src ./src
+COPY vite.config.ts tsconfig.json ./
+COPY epic-music ./epic-music
 
 RUN npm run build
 
 FROM busybox:1.38 AS runner
 WORKDIR /epic_music
 
-COPY --from=builder /epic_music/dist .
+COPY --from=builder /epic_music/epic-music/dist ./epic-music
 
 CMD busybox httpd -f -v -p ${PORT}

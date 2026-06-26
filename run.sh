@@ -1,6 +1,6 @@
 pushd $(dirname $0)
 
-port=8080
+port=5008
 
 # Clean up old image
 podman stop -i epic_music_web

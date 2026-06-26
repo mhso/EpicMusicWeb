@@ -6,7 +6,7 @@ import type { FeedPage, ListFeedRequest, TaskStartResponse, TaskStatusResponse }
 const POLL_INTERVAL_MS = 3_000;
 const POLL_TIMEOUT_MS = 5 * 60 * 1_000;
 
-export const BASE_URL = "http://localhost:5007";
+export const BASE_URL = "https://mhooge.com/epic-music-api";
 
 function toPascal(s: string) {
   let out = "";
@@ -44,7 +44,7 @@ async function getToken() {
     for (let q of query.split("&")) {
       let [k, v] = q.split("=");
       if (k.trim() === "token") {
-        window.history.pushState("authenticated", "", "/")
+        window.history.pushState("authenticated", "", "/epic-music")
         return v;
       }
     }
