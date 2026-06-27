@@ -18,6 +18,7 @@ const {
   genres,
   artists,
   users,
+  currentUser,
   clearFilters,
   reload,
 } = useFeed();
@@ -52,8 +53,12 @@ async function handleSync() {
           <span class="logo-icon">♬</span>
           <span class="logo-text">#epic-music feed</span>
         </div>
+
         <p class="header-sub">Bangers fra Arbejdspladsen</p>
+
         <div v-if="!loading && !error" class="header-actions">
+          <p class="header-user">Velkommen {{ currentUser }}</p>
+  
           <p v-if="syncError" class="sync-error">{{ syncError }}</p>
           <button class="sync-btn" :disabled="syncing" @click="handleSync">
             <span v-if="syncing" class="spinner" aria-hidden="true" />
@@ -148,9 +153,15 @@ async function handleSync() {
 }
 
 .header-sub {
+  position: relative;
+  top: 1px;
   font-size: 0.85rem;
   color: var(--text-muted);
   margin: 0;
+}
+
+.header-user {
+
 }
 
 .header-actions {

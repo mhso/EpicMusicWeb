@@ -1,7 +1,7 @@
 import axios from "axios";
 import qs from "qs";
 import { AxiosInstance, AxiosResponse } from "axios";
-import type { FeedPage, ListFeedRequest, TaskStartResponse, TaskStatusResponse } from "../types";
+import type { FeedPage, ListFeedRequest, TaskStartResponse, TaskStatusResponse, UserInfo } from "../types";
 
 const POLL_INTERVAL_MS = 3_000;
 const POLL_TIMEOUT_MS = 5 * 60 * 1_000;
@@ -154,6 +154,6 @@ export async function syncAndWait(): Promise<TaskStatusResponse> {
   throw new Error("Sync timed out after 5 minutes");
 }
 
-export async function isAuthorized(token: string): Promise<boolean> {
-  return (await api.get<boolean>("auhorized", {"params": {"token": token}})).data;
+export async function getUserInfo(): Promise<UserInfo> {
+  return (await api.get<UserInfo>("user")).data;
 }

@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue';
-import type { FeedEntry, Filters, SortOption } from '../types';
-import { fetchFeed } from '../api/api';
+import type { FeedEntry, Filters, SortOption, UserInfo } from '../types';
+import { fetchFeed, getUserInfo } from '../api/api';
 import { AxiosError } from "axios";
 
 const PAGE_SIZE = 60;
@@ -23,6 +23,8 @@ export function useFeed() {
   const genres = ref<string[]>([]);
   const artists = ref<string[]>([]);
   const users = ref<string[]>([]);
+
+  const currentUser = ref<string | null>(null);
 
   async function load() {
     loading.value = true;
@@ -55,6 +57,10 @@ export function useFeed() {
   watch([filters, sortBy], () => { currentPage.value = 1 }, { deep: true });
   watch([filters, sortBy, currentPage], load, { deep: true, immediate: true });
 
+  getUserInfo().then((user) => {
+    currentUser.value = user.name;
+  });
+
   function clearFilters() {
     filters.value = {};
     sortBy.value = "date-desc";
@@ -72,6 +78,7 @@ export function useFeed() {
     genres,
     artists,
     users,
+    currentUser,
     clearFilters,
     reload: load,
   };

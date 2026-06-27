@@ -56,3 +56,7 @@ export interface TaskStartResponse {
 export interface TaskStatusResponse {
   status: "success" | "running" | "missing" | "error"
 }
+
+export interface UserInfo {
+  name: string | null
+}
