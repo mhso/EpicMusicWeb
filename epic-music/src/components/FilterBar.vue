@@ -208,6 +208,10 @@ const hasActiveFilters = () =>
   border: 1px solid var(--border);
   border-radius: 12px;
   margin-bottom: 1.5rem;
+
+  @media (max-width: 960px) {
+    justify-content: center;
+  }
 }
 
 .filter-controls {
@@ -215,12 +219,20 @@ const hasActiveFilters = () =>
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 0.75rem;
+
+  @media (max-width: 960px) {
+    justify-content: center;
+  }
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+
+  @media (max-width: 420px) {
+    width: 75%;
+  }
 }
 
 label {
@@ -273,6 +285,10 @@ select:focus {
   min-width: 140px;
   text-align: left;
   transition: border-color 0.15s, box-shadow 0.15s;
+
+  @media (max-width: 960px) {
+    width: 100%;
+  }
 }
 
 .multi-select-trigger:focus {
@@ -374,5 +390,6 @@ select:focus {
   font-size: 0.8rem;
   color: var(--text-muted);
   white-space: nowrap;
+  margin-right: 20px;
 }
 </style>

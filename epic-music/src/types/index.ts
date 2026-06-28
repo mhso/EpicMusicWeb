@@ -45,7 +45,7 @@ export interface ListFeedRequest {
   posters?: string[]
   sortBy: "date_posted" | "reactions"
   sortOrder: "asc" | "desc"
-  page: number
+  page: number | undefined
 }
 
 export interface TaskStartResponse {

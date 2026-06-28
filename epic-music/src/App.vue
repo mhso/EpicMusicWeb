@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useFeed } from './composables/useFeed'
+import { usePlaylist } from './composables/usePlaylist'
 import { syncAndWait } from './api/api'
 import FilterBar from './components/FilterBar.vue'
 import FeedEntryComponent from './components/FeedEntry.vue'
+import PlayerBar from './components/PlayerBar.vue'
 import Pagination from './components/Pagination.vue'
+import { FeedEntry } from './types'
 
 const {
   filters,
@@ -19,9 +22,12 @@ const {
   artists,
   users,
   currentUser,
+  listEntries,
   clearFilters,
   reload,
 } = useFeed();
+
+const { queue, addAllToQueue, play } = usePlaylist();
 
 const syncing = ref(false);
 const syncError = ref<string | null>(null);
@@ -43,10 +49,20 @@ async function handleSync() {
     syncing.value = false;
   }
 }
+
+async function playAll(entries: FeedEntry[]) {
+  play(entries);
+  if (totalPages.value > 1) {
+    // Fetch remaining entries
+    let data = await listEntries(filters.value, sortBy.value);
+    let filtered = data.entries.filter((v1) => !entries.find((v2 => v1.id == v2.id)))
+    addAllToQueue(filtered);
+  }
+}
 </script>
 
 <template>
-  <div class="app">
+  <div class="app" :class="{ 'player-active': queue.length > 0 }">
     <header class="site-header">
       <div class="header-inner">
         <div class="logo">
@@ -57,7 +73,7 @@ async function handleSync() {
         <p class="header-sub">Bangers fra Arbejdspladsen</p>
 
         <div v-if="!loading && !error" class="header-actions">
-          <p class="header-user">Velkommen {{ currentUser }}</p>
+          <p class="header-user">Velkommen {{ currentUser }}!</p>
   
           <p v-if="syncError" class="sync-error">{{ syncError }}</p>
           <button class="sync-btn" :disabled="syncing" @click="handleSync">
@@ -94,12 +110,22 @@ async function handleSync() {
           No tracks match the current filters.
         </div>
 
-        <div v-else class="feed-grid">
+        <div v-else>
+          <div class="feed-actions">
+            <button class="play-all-btn" @click="playAll(entries)">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              Play all
+            </button>
+          </div>
+          <div class="feed-grid">
           <FeedEntryComponent
             v-for="entry in entries"
             :key="entry.id"
             :entry="entry"
           />
+          </div>
         </div>
 
         <Pagination
@@ -108,6 +134,7 @@ async function handleSync() {
         />
       </template>
     </main>
+    <PlayerBar />
   </div>
 </template>
 
@@ -161,7 +188,7 @@ async function handleSync() {
 }
 
 .header-user {
-
+  margin-right: 50px;
 }
 
 .header-actions {
@@ -242,6 +269,36 @@ async function handleSync() {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.25rem;
+}
+
+.player-active .main-content {
+  padding-bottom: calc(1.5rem + 4.5rem);
+}
+
+.feed-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.play-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.85rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.play-all-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
 }
 
 @media (max-width: 480px) {

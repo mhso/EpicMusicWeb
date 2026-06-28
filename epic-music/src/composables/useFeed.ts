@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue';
-import type { FeedEntry, Filters, SortOption, UserInfo } from '../types';
+import type { FeedEntry, Filters, SortOption } from '../types';
 import { fetchFeed, getUserInfo } from '../api/api';
 import { AxiosError } from "axios";
 
@@ -26,15 +26,24 @@ export function useFeed() {
 
   const currentUser = ref<string | null>(null);
 
+  async function listEntries(filters_: Filters, sortBy_: SortOption, currentPage_: number | undefined = undefined) {
+    return await fetchFeed({
+      ...filters_,
+      ...toApiSort(sortBy_),
+      page: currentPage_,
+    });
+  }
+
   async function load() {
     loading.value = true;
     error.value = null;
     try {
-      const data = await fetchFeed({
-        ...filters.value,
-        ...toApiSort(sortBy.value),
-        page: currentPage.value - 1,
-      });
+      const data = await listEntries(
+        filters.value,
+        sortBy.value,
+        currentPage.value - 1,
+
+      )
 
       entries.value = data.entries;
       genres.value = data.uniqueGenres;
@@ -80,6 +89,7 @@ export function useFeed() {
     users,
     currentUser,
     clearFilters,
+    listEntries,
     reload: load,
   };
 }

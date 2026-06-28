@@ -10,7 +10,10 @@
     "noEmit": true,
     "paths": {
       "@/*": ["./epic-music/src/*"]
-    }
+    },
+    "types": [
+      "vite/client"
+    ],
   },
   "include": ["epic-music/src/**/*.ts", "epic-music/src/**/*.tsx", "epic-music/src/**/*.vue"],
   "exclude": ["node_modules", "dist"]

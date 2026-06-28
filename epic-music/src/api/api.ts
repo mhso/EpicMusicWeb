@@ -6,7 +6,7 @@ import type { FeedPage, ListFeedRequest, TaskStartResponse, TaskStatusResponse, 
 const POLL_INTERVAL_MS = 3_000;
 const POLL_TIMEOUT_MS = 5 * 60 * 1_000;
 
-export const BASE_URL = "https://mhooge.com/epic-music-api";
+export const BASE_URL = import.meta.env.VITE_API_URL;
 
 function toPascal(s: string) {
   let out = "";

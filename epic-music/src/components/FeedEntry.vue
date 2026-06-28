@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
 import type { FeedEntry } from '../types';
+import { usePlaylist } from '../composables/usePlaylist';
 
-// Module-level: persists across filter changes for the page session.
-// Once a video is activated, it stays activated even if the card is filtered
-// away and back — avoiding a re-render back to the thumbnail state.
 const activated = reactive(new Set<number>());
+const { addToQueue } = usePlaylist();
 
 const props = defineProps<{ entry: FeedEntry }>();
 
@@ -66,6 +65,17 @@ function genreColor(genre: string): string {
     </div>
 
     <div class="embed-wrapper">
+      <button
+        class="queue-btn"
+        aria-label="Add to playlist"
+        @click.stop="addToQueue(entry)"
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true">
+          <path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"/>
+        </svg>
+        Queue
+      </button>
+
       <template v-if="entry.youtubeId">
         <iframe
           v-if="activated.has(entry.id)"
@@ -168,6 +178,36 @@ function genreColor(genre: string): string {
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.queue-btn {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(0, 0, 0, 0.65);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.3rem 0.55rem;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.entry-card:hover .queue-btn {
+  opacity: 1;
+}
+
+.queue-btn:hover {
+  background: var(--accent);
 }
 
 .thumbnail-facade {
