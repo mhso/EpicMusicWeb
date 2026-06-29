@@ -59,6 +59,45 @@ async function playAll(entries: FeedEntry[]) {
     addAllToQueue(filtered);
   }
 }
+
+let wakeLock: WakeLockSentinel | null = null;
+let wakeLockSupported = false;
+
+if ("wakeLock" in navigator) {
+    wakeLockSupported = true;
+}
+
+const requestWakeLock = async () => {
+    if (!wakeLockSupported) {
+      return;
+    }
+
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => {
+        console.log("Wake Lock has been released!");
+      });
+    } catch (err) {
+      // The Wake Lock request has failed - usually system related, such as battery.
+    }
+}
+
+document.addEventListener("visibilitychange", async () => {
+    // Create new wakelock if user navigates to another tab
+    if (wakeLock !== null && document.visibilityState === "visible") {
+      await requestWakeLock();
+    }
+});
+
+async function toggleWakelock() {
+  if (!wakeLock) {
+    await requestWakeLock();
+  }
+  else {
+    await wakeLock.release();
+    wakeLock = null;
+  }
+}
 </script>
 
 <template>
@@ -118,6 +157,11 @@ async function playAll(entries: FeedEntry[]) {
               </svg>
               Play all
             </button>
+  
+            <div class="wakelock-wrapper">
+              <label>Keep Screen On</label>
+              <input type="radio" name="wakelock-toggle" @change="toggleWakelock()">
+            </div>
           </div>
           <div class="feed-grid">
           <FeedEntryComponent
@@ -277,8 +321,26 @@ async function playAll(entries: FeedEntry[]) {
 
 .feed-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-bottom: 0.75rem;
+  align-items: center;
+  flex-direction: row-reverse;
+}
+
+.wakelock-wrapper {
+  display: none;
+
+  @media (max-width: 480) {
+    display: block;
+  }
+}
+
+.wakelock-wrapper > label {
+  font-family: inherit;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  margin-right: 5px;
+  color: var(--text-muted);
 }
 
 .play-all-btn {
