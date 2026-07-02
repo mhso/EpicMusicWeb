@@ -14,15 +14,16 @@ const {
   prev,
   togglePause,
   setVolume,
+  shuffle,
   clear,
   initPlayer,
 } = usePlaylist()
 
 function onVolumeInput(e: Event) {
-  setVolume(Number((e.target as HTMLInputElement).value))
+  setVolume(Number((e.target as HTMLInputElement).value));
 }
 
-const playerHost = ref<HTMLElement | null>(null)
+const playerHost = ref<HTMLElement | null>(null);
 
 onMounted(() => {
   if (playerHost.value) initPlayer(playerHost.value)
@@ -48,11 +49,23 @@ onMounted(() => {
     </div>
 
     <div class="controls">
+      <button class="ctrl-btn" aria-label="Shuffle" @click="shuffle">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+          <g stroke-width="0"></g>
+          <g stroke-linecap="round" stroke-linejoin="round"></g>
+          <g>
+            <path fill-rule="evenodd" d="M0 3.5A.5.5 0 0 1 .5 3H1c2.202 0 3.827 1.24 4.874 2.418.49.552.865 1.102 1.126 1.532.26-.43.636-.98 1.126-1.532C9.173 4.24 10.798 3 13 3v1c-1.798 0-3.173 1.01-4.126 2.082A9.624 9.624 0 0 0 7.556 8a9.624 9.624 0 0 0 1.317 1.918C9.828 10.99 11.204 12 13 12v1c-2.202 0-3.827-1.24-4.874-2.418A10.595 10.595 0 0 1 7 9.05c-.26.43-.636.98-1.126 1.532C4.827 11.76 3.202 13 1 13H.5a.5.5 0 0 1 0-1H1c1.798 0 3.173-1.01 4.126-2.082A9.624 9.624 0 0 0 6.444 8a9.624 9.624 0 0 0-1.317-1.918C4.172 5.01 2.796 4 1 4H.5a.5.5 0 0 1-.5-.5z"></path>
+            <path d="M13 5.466V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192zm0 9v-3.932a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192z"></path>
+          </g>
+        </svg>
+      </button>
+
       <button class="ctrl-btn" :disabled="!hasPrev" aria-label="Previous" @click="prev">
         <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
           <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
         </svg>
       </button>
+
       <button class="ctrl-btn play-btn" :aria-label="isPlaying ? 'Pause' : 'Play'" @click="togglePause">
         <svg v-if="isPlaying" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" aria-hidden="true">
           <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
@@ -61,6 +74,7 @@ onMounted(() => {
           <path d="M8 5v14l11-7z"/>
         </svg>
       </button>
+
       <button class="ctrl-btn" :disabled="!hasNext" aria-label="Next" @click="next">
         <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
           <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
@@ -117,6 +131,10 @@ onMounted(() => {
   padding: 0 1.5rem;
   z-index: 200;
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
+
+  @media (max-width: 480px) {
+    gap: 0.8rem;
+  }
 }
 
 .yt-host {
@@ -133,6 +151,10 @@ onMounted(() => {
   gap: 0.75rem;
   min-width: 0;
   flex: 1;
+
+  @media (max-width: 480px) {
+    justify-content: center;
+  }
 }
 
 .track-thumb {

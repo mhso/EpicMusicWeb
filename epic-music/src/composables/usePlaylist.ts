@@ -29,36 +29,43 @@ const volume = ref(30);
 let ytPlayer: YTPlayerInstance | null = null;
 let playerReady = false;
 let apiLoaded = false;
+let hasPlayed = false;
 
 function ensureApiLoaded(): Promise<void> {
-  if (apiLoaded) return Promise.resolve()
+  if (apiLoaded) {
+    return Promise.resolve();
+  }
+
   return new Promise((resolve) => {
-    const prev = window.onYouTubeIframeAPIReady
+    const prev = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = () => {
-      prev?.()
-      apiLoaded = true
-      resolve()
+      prev?.();
+      apiLoaded = true;
+      resolve();
     }
+
     if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
-      const s = document.createElement('script')
-      s.src = 'https://www.youtube.com/iframe_api'
-      document.head.appendChild(s)
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(s);
     }
   })
 }
 
 function loadTrack(index: number) {
-  currentIndex.value = index
-  const entry = queue.value[index]
-  if (!entry) return
+  currentIndex.value = index;
+  const entry = queue.value[index];
+  if (!entry) return;
+
   // Skip entries without a YouTube ID
   if (!entry.youtubeId) {
     if (index < queue.value.length - 1) loadTrack(index + 1)
     else isPlaying.value = false
     return
   }
+
   if (ytPlayer && playerReady) {
-    ytPlayer.loadVideoById(entry.youtubeId)
+    ytPlayer.loadVideoById(entry.youtubeId);
   }
   // If not ready yet, onReady will pick up currentTrack
 }
@@ -79,7 +86,11 @@ export function usePlaylist() {
     if (queue.value.length === 0) {
       play([entry]);
     } else {
-      queue.value = [...queue.value, entry];
+      queue.value.push(entry);
+      if (hasPlayed && !isPlaying.value) {
+        // Start playing if we stopped previously and queue a new song
+        loadTrack(currentIndex.value + 1);
+      }
     }
   }
 
@@ -105,8 +116,26 @@ export function usePlaylist() {
   }
 
   function setVolume(v: number) {
-    volume.value = v
-    ytPlayer?.setVolume(v)
+    volume.value = v;
+    ytPlayer?.setVolume(v);
+  }
+
+  function shuffle() {
+    if (!hasNext) {
+      return;
+    }
+
+    let prevTracks = Array.from(queue.value.slice(0, currentIndex.value + 1));
+    let nextTracks = Array.from(queue.value.slice(currentIndex.value + 1));
+
+    for (let i = 0; i < nextTracks.length; i++) {
+      let newIndex = Math.floor(Math.random() * nextTracks.length);
+      let oldValue = nextTracks[newIndex];
+      nextTracks[newIndex] = nextTracks[i];
+      nextTracks[i] = oldValue;
+    }
+
+    queue.value = prevTracks.concat(nextTracks);
   }
 
   function clear() {
@@ -124,14 +153,17 @@ export function usePlaylist() {
         playerVars: { autoplay: 1, controls: 0, rel: 0 },
         events: {
           onReady: () => {
-            playerReady = true
-            ytPlayer!.setVolume(volume.value)
+            playerReady = true;
+            ytPlayer!.setVolume(volume.value);
             if (currentTrack.value?.youtubeId) {
-              ytPlayer!.loadVideoById(currentTrack.value.youtubeId)
+              ytPlayer!.loadVideoById(currentTrack.value.youtubeId);
             }
           },
           onStateChange: (e: { data: number }) => {
             isPlaying.value = e.data === 1 // PLAYING
+            if (isPlaying && !hasPlayed) {
+              hasPlayed = true;
+            }
             if (e.data === 0) next()       // ENDED → advance
           },
         },
@@ -154,6 +186,7 @@ export function usePlaylist() {
     prev,
     togglePause,
     setVolume,
+    shuffle,
     clear,
     initPlayer,
   }

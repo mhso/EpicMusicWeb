@@ -42,7 +42,6 @@ export function useFeed() {
         filters.value,
         sortBy.value,
         currentPage.value - 1,
-
       )
 
       entries.value = data.entries;

@@ -65,6 +65,17 @@ function genreColor(genre: string): string {
     </div>
 
     <div class="embed-wrapper">
+      <span v-if="entry.linkBroken" class="link-info" title="This video was deleted and has been replaced.">
+        <svg viewBox="0 0 1024 1024" class="icon" version="1.1" fill="#000000">
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+          <g id="SVGRepo_iconCarrier">
+            <path d="M512 512m-448 0a448 448 0 1 0 896 0 448 448 0 1 0-896 0Z" fill="#FF9922"></path>
+            <path d="M469.333333 469.333333h85.333334v234.666667h-85.333334z" fill="#FFFFFF"></path>
+            <path d="M512 352m-53.333333 0a53.333333 53.333333 0 1 0 106.666666 0 53.333333 53.333333 0 1 0-106.666666 0Z" fill="#FFFFFF"></path>
+          </g>
+        </svg>
+      </span>
       <button
         class="queue-btn"
         aria-label="Add to playlist"
@@ -141,7 +152,7 @@ function genreColor(genre: string): string {
             :key="reaction.emoji"
             class="reaction"
           >
-            <img v-if="reaction.emoji.startsWith('https://')" class="emoji-icon" :src="reaction.emoji"><span v-else>{{ reaction.emoji }}</span>&thinsp;{{ reaction.count }}
+            <img v-if="reaction.emojiUrl" class="emoji-icon" :src="reaction.emojiUrl"><span v-else>{{ reaction.emoji }}</span>&thinsp;{{ reaction.count }}
           </span>
         </div>
       </div>
@@ -178,6 +189,23 @@ function genreColor(genre: string): string {
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.link-info {
+  top: 0.3rem;
+  right: 0.3rem;
+  position: absolute;
+  z-index: 10;
+  cursor: help;
+  line-height: 1.3;
+}
+
+.link-info > svg {
+  width: 1.7rem;
+}
+
+.link-info:hover {
+  filter: brightness(1.15);
 }
 
 .queue-btn {

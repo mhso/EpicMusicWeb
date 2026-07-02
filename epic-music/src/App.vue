@@ -27,7 +27,7 @@ const {
   reload,
 } = useFeed();
 
-const { queue, addAllToQueue, play } = usePlaylist();
+const { queue, addAllToQueue } = usePlaylist();
 
 const syncing = ref(false);
 const syncError = ref<string | null>(null);
@@ -51,7 +51,7 @@ async function handleSync() {
 }
 
 async function playAll(entries: FeedEntry[]) {
-  play(entries);
+  addAllToQueue(entries);
   if (totalPages.value > 1) {
     // Fetch remaining entries
     let data = await listEntries(filters.value, sortBy.value);
@@ -330,7 +330,7 @@ async function toggleWakelock() {
 .wakelock-wrapper {
   display: none;
 
-  @media (max-width: 480) {
+  @media (max-width: 480px) {
     display: block;
   }
 }

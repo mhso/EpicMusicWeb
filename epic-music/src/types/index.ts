@@ -1,6 +1,7 @@
 export interface Reaction {
   emoji: string
   count: number
+  emojiUrl: string | null
 }
 
 export interface FeedEntry {
@@ -16,6 +17,7 @@ export interface FeedEntry {
   datePosted: string // ISO 8601
   postedBy: string // Discord username
   avatar: string | null
+  linkBroken: boolean
   artists: string[]
   genres: string[]
   reactions: Reaction[]

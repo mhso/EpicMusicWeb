@@ -57,6 +57,28 @@ async function getToken() {
   return null;
 }
 
+function convertRecursive(val: any): any {
+  if (val instanceof Array) {
+    let output = [];
+    for (let v of val) {
+      output.push(convertRecursive(v));
+    }
+
+    return output;
+  }
+
+  else if (val instanceof Object) {
+    var output: {[k: string]: any} = {};
+    for (let [k, v] of Object.entries(val)) {
+      output[`${toPascal(k)}`] = convertRecursive(v);
+    }
+  
+    return output;
+  }
+
+  return val;
+}
+
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 8000,
@@ -64,10 +86,7 @@ const api: AxiosInstance = axios.create({
   headers: {"Authentication": `Bearer ${await getToken()}`},
   transformResponse: [(data) => {
     let parsedData = JSON.parse(data);
-    let output: Record<string, unknown> = {};
-    for (let [k, v] of Object.entries(parsedData)) {
-      output[toPascal(k)] = v;
-    }
+    let output: Record<string, unknown> = convertRecursive(parsedData);
 
     return output;
   }]
